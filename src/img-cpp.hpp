@@ -14,9 +14,16 @@
 #include <array>
 #include <string>
 #include <algorithm>
+#include <iterator>
 
 
 #ifdef IMG_CPP
+
+enum ERR{
+    NO_ERR = 0,
+    OPEN_ERR = 1,
+    COPY_ERR = 2,
+};
 
 struct Canvas{
     size_t w, h;
@@ -24,21 +31,28 @@ struct Canvas{
     uint8_t *data = NULL;
 
     Canvas(size_t w, size_t h);
+    ~Canvas();
 
-
-    void save(std::string name);
+    int saveppm(const char* name);
+    int copy(Canvas &out);
 };
 
 Canvas::Canvas(size_t w, size_t h): w(w), h(h){
     size = w*h*3;
     data = new uint8_t[size];
-    std::fill(data, data+size, 255);
+    std::fill(data, data+size, 0);
 }
 
-void Canvas::save(std::string name){
-    std::fstream canvas(name, std::ios::binary | std::ios::out);
+Canvas::~Canvas(){
+    delete data;
+}
 
-    canvas << "P6\n" << w << ' ' << h << "\n255\n";
+int Canvas::saveppm(const char* name){
+    std::fstream canvas(name, std::ios::out);
+
+    if(!canvas.is_open()) return OPEN_ERR;
+
+    canvas << "P3\n" << w << ' ' << h << "\n255\n";
 
     for(int i; i < size; i++){
         canvas << (int)*(data+i) << ' ';
@@ -48,6 +62,18 @@ void Canvas::save(std::string name){
     }
 
     canvas.close();
+    return NO_ERR;
+}
+
+int Canvas::copy(Canvas &out){
+    if(w != out.w || h != out.h){
+        std::cout << "(img-cpp) Canvas don't have same size. Rescale first\n";
+        return COPY_ERR;
+    }
+
+    for(int i = 0; i < size; i++) *(out.data+i) = *(data+i);
+
+    return NO_ERR;
 }
 
 enum HEX_COLOR{

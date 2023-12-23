@@ -5,7 +5,14 @@
 int main(){
 
     Canvas test(100, 100);
-    test.save("savetest.ppm");
+    Canvas copytest(100, 100);
+    
+    //test.copy(copytest);
+    
+    test.saveppm("savetest.ppm");
+    test.~Canvas();
+
+    copytest.saveppm("copytest.ppm");
 
     return 0;
 }
