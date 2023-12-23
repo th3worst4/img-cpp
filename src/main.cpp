@@ -4,7 +4,8 @@
 
 int main(){
 
-    hex_to_rgb(0xe17f1e);
+    Canvas test(100, 100);
+    test.save("savetest.ppm");
 
     return 0;
 }

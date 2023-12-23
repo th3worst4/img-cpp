@@ -21,7 +21,7 @@
 struct Canvas{
     size_t w, h;
     size_t size;
-    u_int8_t *data = NULL;
+    uint8_t *data = NULL;
 
     Canvas(size_t w, size_t h);
 
@@ -31,12 +31,23 @@ struct Canvas{
 
 Canvas::Canvas(size_t w, size_t h): w(w), h(h){
     size = w*h*3;
-    data = new u_int8_t[size];
+    data = new uint8_t[size];
     std::fill(data, data+size, 255);
 }
 
 void Canvas::save(std::string name){
+    std::fstream canvas(name, std::ios::binary | std::ios::out);
 
+    canvas << "P6\n" << w << ' ' << h << "\n255\n";
+
+    for(int i; i < size; i++){
+        canvas << (int)*(data+i) << ' ';
+        if((i+1)%3 == 0){
+            canvas << "\n";
+        }
+    }
+
+    canvas.close();
 }
 
 enum HEX_COLOR{
@@ -52,11 +63,11 @@ enum HEX_COLOR{
     YELLOW = 0xFFFF00,
 };
 
-std::array<u_int8_t, 3> hex_to_rgb(u_int32_t hex){
-    std::array<u_int8_t, 3> rgb;
+std::array<uint8_t, 3> hex_to_rgb(uint32_t hex){
+    std::array<uint8_t, 3> rgb;
 
-    rgb[0] = (hex & RED) >> 4*sizeof(u_int32_t);
-    rgb[1] = (hex & GREEN) >> 2*sizeof(u_int32_t);
+    rgb[0] = (hex & RED) >> 4*sizeof(uint32_t);
+    rgb[1] = (hex & GREEN) >> 2*sizeof(uint32_t);
     rgb[2] = hex & BLUE;
 
     return rgb;
