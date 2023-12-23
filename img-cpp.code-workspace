@@ -4,5 +4,12 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.associations": {
+			"*.html": "html",
+			"*.scss": "css",
+			"*.nes": "wat",
+			"array": "cpp"
+		}
+	}
 }
