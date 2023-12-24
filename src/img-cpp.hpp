@@ -19,6 +19,29 @@
 
 #ifdef IMG_CPP
 
+enum HEX_COLOR{
+    WHITE = 0xFFFFFF,
+    BLACK = 0x000000,
+
+    RED = 0xFF0000,
+    GREEN = 0x00FF00,
+    BLUE = 0x0000FF,
+
+    CYAN = 0x00FFFF,
+    MAGENTA = 0xFF00FF,
+    YELLOW = 0xFFFF00,
+};
+
+std::array<uint8_t, 3> hex_to_rgb(uint32_t hex){
+    std::array<uint8_t, 3> rgb;
+
+    rgb[0] = (hex & RED) >> 4*sizeof(uint32_t);
+    rgb[1] = (hex & GREEN) >> 2*sizeof(uint32_t);
+    rgb[2] = hex & BLUE;
+
+    return rgb;
+}
+
 enum ERR{
     NO_ERR = 0,
     OPEN_ERR = 1,
@@ -31,20 +54,16 @@ struct Canvas{
     uint8_t *data = NULL;
 
     Canvas(size_t w, size_t h);
-    ~Canvas();
 
     int saveppm(const char* name);
     int copy(Canvas &out);
+    void change_pixel(size_t x, size_t y, u_int32_t hex_color);
 };
 
 Canvas::Canvas(size_t w, size_t h): w(w), h(h){
     size = w*h*3;
     data = new uint8_t[size];
     std::fill(data, data+size, 0);
-}
-
-Canvas::~Canvas(){
-    delete data;
 }
 
 int Canvas::saveppm(const char* name){
@@ -76,27 +95,12 @@ int Canvas::copy(Canvas &out){
     return NO_ERR;
 }
 
-enum HEX_COLOR{
-    WHITE = 0xFFFFFF,
-    BLACK = 0x000000,
-
-    RED = 0xFF0000,
-    GREEN = 0x00FF00,
-    BLUE = 0x0000FF,
-
-    CYAN = 0x00FFFF,
-    MAGENTA = 0xFF00FF,
-    YELLOW = 0xFFFF00,
-};
-
-std::array<uint8_t, 3> hex_to_rgb(uint32_t hex){
+void Canvas::change_pixel(size_t x, size_t y, uint32_t hex_color){
+    x--; y--;
     std::array<uint8_t, 3> rgb;
+    rgb = hex_to_rgb(hex_color);
 
-    rgb[0] = (hex & RED) >> 4*sizeof(uint32_t);
-    rgb[1] = (hex & GREEN) >> 2*sizeof(uint32_t);
-    rgb[2] = hex & BLUE;
-
-    return rgb;
+    for(int i = 0; i < 3; i++) *(data+x*3+y*w*3+i) = rgb[i];
 }
 
 void test(){
