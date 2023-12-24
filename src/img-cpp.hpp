@@ -7,6 +7,11 @@
     but by my own
 */
 
+//  todo:
+//  circunference
+//  rectangle
+//  read function
+//  polygon
 
 #include <iostream>
 #include <fstream>
@@ -24,8 +29,7 @@
 
 #define IMG_CPPMIN(x, y) (((x) < (y)) ? (x) : (y))
 
-enum ERR{
-    
+enum ERR{ 
     //Some error codes to be used on this source file
     
     NO_ERR = 0,
@@ -35,8 +39,7 @@ enum ERR{
     OUT_BOUND_ERR = 4,
 };
 
-enum HEX_COLOR{
-    
+enum HEX_COLOR{ 
     //Basic hex colors defined to be used without declaration on main code
     
     WHITE = 0xFFFFFF,
@@ -55,7 +58,7 @@ std::array<uint8_t, 3> hex_to_rgb(uint32_t hex){
     /*
         Converts a hex color code to RGB values,
         the values are stored on an array,
-        this function returns a standard array
+        this function returns a standard cpp array
     */
     std::array<uint8_t, 3> rgb;
 
@@ -84,6 +87,10 @@ struct Canvas{
 };
 
 Canvas::Canvas(size_t w, size_t h): w(w), h(h){
+    /*
+        Initialize a canvas object.
+        Canvas are made to draw on them
+    */
     size = w*h*3;
     data = new uint8_t[size];
     std::fill(data, data+size, 0);
@@ -91,9 +98,8 @@ Canvas::Canvas(size_t w, size_t h): w(w), h(h){
 
 int Canvas::saveppm(const char* name){
     /*
-        something is wrong with this save function.
-        idk why, but saving two canvas in sequence makes the last saved
-        canvas to not be properly saved
+        Saves the created object by the path/name passed in name variable.
+        Returns 0 if successful
     */
     std::fstream canvas(name, std::ios::out);
 
@@ -113,6 +119,10 @@ int Canvas::saveppm(const char* name){
 }
 
 int Canvas::copy(Canvas &out){
+    /*
+        Copy the canvas data from one canvas to another.
+        Returns 0 if successful
+    */
     if(w != out.w || h != out.h){
         std::cout << "(img-cpp) Canvas don't have same size. Rescale first\n";
         IMG_CPPERRORCALL(COPY_ERR);
@@ -128,8 +138,9 @@ int Canvas::copy(Canvas &out){
 int Canvas::change_pixel(size_t x, size_t y, uint32_t hex_color){
     /*
         This function is supposed to change just one pixel of the canvas.
-        Kindda useless, but as I'm working on a general purpose use library,
-        this may be usefull for some thing.
+        It's the basic idea for all other drawing functions, 
+        still you can call it alone
+        Returns 0 if successful
     */
     --x; --y;
     std::array<uint8_t, 3> rgb;
@@ -142,7 +153,12 @@ int Canvas::change_pixel(size_t x, size_t y, uint32_t hex_color){
     return NO_ERR;
 }
 
-int Canvas::line(size_t x0, size_t y0, size_t x, size_t y, size_t line_width, uint32_t hex_color){ 
+int Canvas::line(size_t x0, size_t y0, size_t x, size_t y, size_t line_width, uint32_t hex_color){
+    /*
+        Creates a line that connects (x0, y0) to (x, y).
+        x0 must be less than x or it will evoque an out of bounds error
+        Returns 0 if successful
+    */
     if((x0 > w || x > w) || x0 > x) IMG_CPPERRORCALL(OUT_BOUND_ERR);
     if((y0 > h || y > h) || y0 > y) IMG_CPPERRORCALL(OUT_BOUND_ERR);
 
