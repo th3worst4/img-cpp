@@ -5,13 +5,12 @@
 int main(){
 
     Canvas test(100, 100);
-    Canvas copytest(100, 100);
-    
+    Canvas test2(50, 50);
 
     test.change_pixel(50, 50, RED);
-    test.copy(copytest);
-    
-    copytest.saveppm("copytest.ppm");
+
+    test.saveppm("savetest.ppm");
+    test2.saveppm("copytest.ppm");
 
     return 0;
 }
