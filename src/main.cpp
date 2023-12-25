@@ -5,12 +5,14 @@
 int main(){
 
     Canvas test(100, 100);
-    Canvas test2(50, 50);
 
-    test.change_pixel(50, 50, RED);
+    circ c(50, 50, 30);
+    c.fill(true, BLUE);
+    c.stroke(true, 1, RED);
+
+    test.circunference(c);
 
     test.saveppm("savetest.ppm");
-    test2.saveppm("copytest.ppm");
 
     return 0;
 }

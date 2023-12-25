@@ -73,6 +73,42 @@ std::array<uint8_t, 3> hex_to_rgb(uint32_t hex){
     return rgb;
 }
 
+typedef struct circ{
+    int64_t x0, y0;
+    size_t radius;    
+
+    bool fill_state;
+    uint32_t fill_color;
+
+    bool stroke_state;
+    size_t stroke_width;
+    uint32_t stroke_color;
+
+    circ(int64_t x, int64_t y, size_t radius);
+    
+    int fill(bool fs, uint32_t fc = 0xffffff);
+    int stroke(bool s, size_t sw = 1, uint32_t sc = 0xffffff);
+
+}circ;
+
+circ::circ(int64_t x, int64_t y, size_t radius): x0(x), y0(y), radius(radius){
+}
+
+int circ::fill(bool fs, uint32_t fc){
+    fill_state = fs;
+    fill_color = fc;
+
+    return NO_ERR;
+}
+
+int circ::stroke(bool s, size_t sw, uint32_t sc){
+    stroke_state = s;
+    stroke_width = sw;
+    stroke_color = sc;
+
+    return NO_ERR;
+}
+
 struct Canvas{
     size_t w, h;
     size_t size;
@@ -82,8 +118,10 @@ struct Canvas{
 
     int saveppm(const char* name);
     int copy(Canvas &out);
-    int change_pixel(size_t x, size_t y, u_int32_t hex_color);
+    int change_pixel(size_t x, size_t y, uint32_t hex_color);
     int line(size_t x0, size_t y0, size_t x, size_t y, size_t line_width, uint32_t hex_color);
+    int circunference(struct circ c);
+    
 };
 
 Canvas::Canvas(size_t w, size_t h): w(w), h(h){
@@ -93,7 +131,7 @@ Canvas::Canvas(size_t w, size_t h): w(w), h(h){
     */
     size = w*h*3;
     data = new uint8_t[size];
-    std::fill(data, data+size, 0);
+    std::fill(data, data+size, 0xAAAAAA);
 }
 
 int Canvas::saveppm(const char* name){
@@ -176,6 +214,29 @@ int Canvas::line(size_t x0, size_t y0, size_t x, size_t y, size_t line_width, ui
         }
     }
  
+    return NO_ERR;
+}
+
+int Canvas::circunference(struct circ c){
+    if(c.x0 - c.radius > w || c.x0 + c.radius < 0) IMG_CPPERRORCALL(OUT_BOUND_ERR);
+    if(c.y0 - c.radius > h || c.y0 + c.radius < 0) IMG_CPPERRORCALL(OUT_BOUND_ERR);
+
+    if(c.fill_state){
+        for(int x = c.x0 - c.radius; x < c.x0 + c.radius; x++){
+            for(int y = c.y0 - c.radius; y < c.y0 + c.radius; y++){
+                if(pow(x-c.x0, 2) + pow(y-c.y0, 2) <= pow(c.radius, 2)) change_pixel(x, y, c.fill_color);
+            }
+        }
+    }
+
+    if(c.stroke_state){
+        for(int x = c.x0 - c.radius; x < c.x0 + c.radius; x++){
+            for(int y = c.y0 - c.radius; y < c.y0 + c.radius; y++){
+                if(pow(x-c.x0, 2) + pow(y-c.y0, 2) == pow(c.radius, 2)) change_pixel(x, y, c.stroke_color);
+            }
+        }
+    }
+
     return NO_ERR;
 }
 
