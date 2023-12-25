@@ -24,3 +24,9 @@ debug: $(DOBJECTS)
 
 $(DOBJECTS): %-debug.o: src/%.cpp
 	$(CC) $(CFLAGS) -g -o debug/$@ -c $^
+
+
+delete:
+	@echo "removing all not source files"
+	@rm bin/main bin/main.o
+	@rm debug/main-debug debug/main-debug.o
