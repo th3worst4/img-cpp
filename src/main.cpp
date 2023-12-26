@@ -6,11 +6,9 @@ int main(){
 
     Canvas test(100, 100);
 
-    circ c(50, 50, 30);
-    c.fill(true, BLUE);
-    c.stroke(true, 1, RED);
+    line l(50, 50, 50, 80, 1, 0);
 
-    test.circunference(c);
+    test.line(l);
 
     test.saveppm("savetest.ppm");
 

@@ -39,6 +39,8 @@ enum ERR{
     OUT_BOUND_ERR = 4,
 };
 
+#ifdef BASIC_HEX
+
 enum HEX_COLOR{ 
     //Basic hex colors defined to be used without declaration on main code
     
@@ -54,6 +56,8 @@ enum HEX_COLOR{
     YELLOW = 0xFFFF00,
 };
 
+#endif
+
 std::array<uint8_t, 3> hex_to_rgb(uint32_t hex){
     /*
         Converts a hex color code to RGB values,
@@ -62,9 +66,9 @@ std::array<uint8_t, 3> hex_to_rgb(uint32_t hex){
     */
     std::array<uint8_t, 3> rgb;
 
-    rgb[0] = (hex & RED) >> 4*sizeof(uint32_t);
-    rgb[1] = (hex & GREEN) >> 2*sizeof(uint32_t);
-    rgb[2] = hex & BLUE;
+    rgb[0] = (hex & 0xff000) >> 4*sizeof(uint32_t);
+    rgb[1] = (hex & 0x00ff00) >> 2*sizeof(uint32_t);
+    rgb[2] = hex & 0x0000ff;
 
     for(uint8_t value : rgb){
         if(value > 255) IMG_CPPERRORCALL(CONV_ERR);
@@ -72,6 +76,18 @@ std::array<uint8_t, 3> hex_to_rgb(uint32_t hex){
 
     return rgb;
 }
+
+typedef struct line{
+    size_t x0, y0, x, y;
+    size_t line_width;
+    uint32_t hex_color;
+
+    line(size_t x0, size_t y0, size_t x, size_t y, size_t line_width, uint32_t hex_color);
+}line;
+
+line::line(size_t x0, size_t y0, size_t x, size_t y, size_t lw, uint32_t hexc): x0(x0), y0(y0), x(x), y(y), line_width(lw), hex_color(hexc){
+}
+
 
 typedef struct circ{
     int64_t x0, y0;
@@ -119,7 +135,7 @@ struct Canvas{
     int saveppm(const char* name);
     int copy(Canvas &out);
     int change_pixel(size_t x, size_t y, uint32_t hex_color);
-    int line(size_t x0, size_t y0, size_t x, size_t y, size_t line_width, uint32_t hex_color);
+    int line(struct line l);
     int circunference(struct circ c);
     
 };
@@ -191,26 +207,36 @@ int Canvas::change_pixel(size_t x, size_t y, uint32_t hex_color){
     return NO_ERR;
 }
 
-int Canvas::line(size_t x0, size_t y0, size_t x, size_t y, size_t line_width, uint32_t hex_color){
+int Canvas::line(struct line l){
     /*
         Creates a line that connects (x0, y0) to (x, y).
         x0 must be less than x or it will evoque an out of bounds error
         Returns 0 if successful
     */
-    if((x0 > w || x > w) || x0 > x) IMG_CPPERRORCALL(OUT_BOUND_ERR);
-    if((y0 > h || y > h) || y0 > y) IMG_CPPERRORCALL(OUT_BOUND_ERR);
+    if((l.x0 > w || l.x > w) || l.x0 > l.x) IMG_CPPERRORCALL(OUT_BOUND_ERR);
+    if((l.y0 > h || l.y > h) || l.y0 > l.y) IMG_CPPERRORCALL(OUT_BOUND_ERR);
 
-    float m = (y0-y)/(x0-x);
-    size_t dx = abs(x0-x);
+    if(l.x0 - l.x){
+        float m = (l.y0-l.y)/(l.x0-l.x);
+        size_t dx = abs(l.x0-l.x);
+        for(int i = 0; i <= dx; i++){
+            size_t sx = l.x0 + i;
+            size_t sy = l.y0 + m*i;
 
-    for(int i = 0; i <= dx; i++){
-        size_t sx = x0 + i;
-        size_t sy = y0 + m*i;
-
-        change_pixel(sx, sy, hex_color);
-        for(int j = 0; j < line_width; j++){
-            change_pixel(sx, sy+j, hex_color);
-            change_pixel(sx, sy-j, hex_color);
+            change_pixel(sx, sy, l.hex_color);
+            for(int j = 0; j < l.line_width; j++){
+                change_pixel(sx, sy+j, l.hex_color);
+                change_pixel(sx, sy-j, l.hex_color);
+            }
+        }
+    }else{
+        size_t dy = abs(l.y0 - l.y);
+        for(int i = 0; i < dy; i++){
+            change_pixel(l.x, l.y0 + i, l.hex_color);
+            for(int j = 0; j < l.line_width; j++){
+                change_pixel(l.x+j, l.y0 + i, l.hex_color);
+                change_pixel(l.x-j, l.y0 + i, l.hex_color);
+            } 
         }
     }
  
