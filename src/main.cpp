@@ -1,16 +1,15 @@
 #define IMG_CPP
+#define BASIC_HEX
 
 #include "img-cpp.hpp"
 
 int main(){
 
-    Canvas test(100, 100);
+    Canvas test("savetest.ppm");
+    Canvas readtest = Canvas(100, 100);
 
-    line l(50, 50, 50, 80, 1, 0);
-
-    test.line(l);
-
-    test.saveppm("savetest.ppm");
+    test.copy(readtest);
+    readtest.saveppm("readtest.ppm");
 
     return 0;
 }

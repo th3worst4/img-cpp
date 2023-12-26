@@ -15,6 +15,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <istream>
 #include <stdint.h>
 #include <array>
 #include <string>
@@ -40,9 +41,15 @@ enum ERR{
 };
 
 #ifdef BASIC_HEX
-
+   /**
+    * @brief Defines some basic hexadecimal colors to be used along the code
+    *  
+    * @returns uint32_t color value 
+    *
+    * @note Colors: white, black, pure red, pure green, pure blue, cyan, magenta, yellow.
+    * 
+   */
 enum HEX_COLOR{ 
-    //Basic hex colors defined to be used without declaration on main code
     
     WHITE = 0xFFFFFF,
     BLACK = 0x000000,
@@ -58,12 +65,16 @@ enum HEX_COLOR{
 
 #endif
 
-std::array<uint8_t, 3> hex_to_rgb(uint32_t hex){
-    /*
-        Converts a hex color code to RGB values,
-        the values are stored on an array,
-        this function returns a standard cpp array
+    /**
+     * @brief Converts an uint32_t hex color code to RGB values.
+     * The values are stored on a standard array.
+     * 
+     * @returns A std::array of size 3 where {R, G, B}
+     * 
+     * @note The type of elements on the array are uint8_t
+     * 
     */
+std::array<uint8_t, 3> hex_to_rgb(uint32_t hex){
     std::array<uint8_t, 3> rgb;
 
     rgb[0] = (hex & 0xff000) >> 4*sizeof(uint32_t);
@@ -77,6 +88,18 @@ std::array<uint8_t, 3> hex_to_rgb(uint32_t hex){
     return rgb;
 }
 
+    /**
+     * @brief Line object, connects two points with a line
+     * 
+     * @param points (x0, y0) --- (x, y)
+     * @param line_width line width in pixels
+     * @param hex_color uint32_t hex value for the color
+     * 
+     * @warning x0 must be less or equal x
+     * 
+     * @note Has default constructor
+     * 
+     */
 typedef struct line{
     size_t x0, y0, x, y;
     size_t line_width;
@@ -88,7 +111,16 @@ typedef struct line{
 line::line(size_t x0, size_t y0, size_t x, size_t y, size_t lw, uint32_t hexc): x0(x0), y0(y0), x(x), y(y), line_width(lw), hex_color(hexc){
 }
 
-
+    /**
+     * @brief Circunference object, creates a circunference
+     * 
+     * @param center (x0, y0)
+     * @param radius radius length in pixels
+     * 
+     * @note The default constructor only requires the fundamental information about the circunference.
+     * That is the center and the radius. To customize the color, for example, you need to call methods, like fill or stroke.
+     * 
+     */
 typedef struct circ{
     int64_t x0, y0;
     size_t radius;    
@@ -125,20 +157,38 @@ int circ::stroke(bool s, size_t sw, uint32_t sc){
     return NO_ERR;
 }
 
+    /**
+     * @brief Canvas are the basic structure of all this library,
+     * everything is supposed to be done on a canvas
+     * 
+     * @param w: width in pixels of the canvas
+     * @param h: height in pixels of the canvas
+     * @param size: size of the data array of the canvas, it's defined as w*h*3
+     * @param data: uint8_t pointer that contains the data of all canvas' pixels
+     * 
+     * @note Has default constructor which requires only the width and size
+     * 
+     */
 struct Canvas{
     size_t w, h;
     size_t size;
     uint8_t *data = NULL;
 
+    Canvas();
     Canvas(size_t w, size_t h);
+    Canvas(const char* name);
 
     int saveppm(const char* name);
     int copy(Canvas &out);
+
     int change_pixel(size_t x, size_t y, uint32_t hex_color);
-    int line(struct line l);
-    int circunference(struct circ c);
+    int line(struct line &l);
+    int circunference(struct circ &c);
     
 };
+
+Canvas::Canvas(){
+}
 
 Canvas::Canvas(size_t w, size_t h): w(w), h(h){
     /*
@@ -150,11 +200,47 @@ Canvas::Canvas(size_t w, size_t h): w(w), h(h){
     std::fill(data, data+size, 0xAAAAAA);
 }
 
-int Canvas::saveppm(const char* name){
-    /*
-        Saves the created object by the path/name passed in name variable.
-        Returns 0 if successful
+Canvas::Canvas(const char* name){
+    std::fstream canvas(name, std::ios::in ^ std::ios::out);
+
+    if(!canvas.is_open()) IMG_CPPERRORCALL(OPEN_ERR);
+    std::string buffer;
+
+    getline(canvas, buffer);
+
+    if(buffer != "P3") IMG_CPP(OPEN_ERR);
+
+    buffer.clear();
+    canvas>>buffer;
+    w = stoul(buffer);
+
+    buffer.clear();
+    canvas>>buffer;
+    h = stoul(buffer);
+
+    size = h*w*3;
+    data = new uint8_t[size];
+
+    buffer.clear();
+    canvas>>buffer;
+    if(stoi(buffer) != 255) IMG_CPP(OPEN_ERR);
+
+    for(int i = 0; i < size; i++){
+        buffer.clear();
+        canvas>>buffer;
+        *(data+i) = stoi(buffer);
+    }
+}
+
+    /**
+     * @brief Saves the created canvas on local disk
+     * 
+     * @param name: file name of the saved file
+     * 
+     * @returns 0 if successfull
+     * 
     */
+int Canvas::saveppm(const char* name){
     std::fstream canvas(name, std::ios::out);
 
     if(!canvas.is_open()) IMG_CPPERRORCALL(OPEN_ERR);
@@ -172,11 +258,13 @@ int Canvas::saveppm(const char* name){
     return NO_ERR;
 }
 
+    /**
+     *  @brief Copy the canvas data from one canvas to another.
+     * 
+     *  @returns 0 if successful.
+     * 
+     */
 int Canvas::copy(Canvas &out){
-    /*
-        Copy the canvas data from one canvas to another.
-        Returns 0 if successful
-    */
     if(w != out.w || h != out.h){
         std::cout << "(img-cpp) Canvas don't have same size. Rescale first\n";
         IMG_CPPERRORCALL(COPY_ERR);
@@ -188,6 +276,7 @@ int Canvas::copy(Canvas &out){
 
     return NO_ERR;
 }
+
 
 int Canvas::change_pixel(size_t x, size_t y, uint32_t hex_color){
     /*
@@ -207,12 +296,13 @@ int Canvas::change_pixel(size_t x, size_t y, uint32_t hex_color){
     return NO_ERR;
 }
 
-int Canvas::line(struct line l){
-    /*
-        Creates a line that connects (x0, y0) to (x, y).
-        x0 must be less than x or it will evoque an out of bounds error
-        Returns 0 if successful
-    */
+    /**
+     *  @brief Creates a line based upon a line object
+     *  @param line see typedef struct line for more info
+     *  @returns 0 if successful
+     * 
+     */
+int Canvas::line(struct line &l){
     if((l.x0 > w || l.x > w) || l.x0 > l.x) IMG_CPPERRORCALL(OUT_BOUND_ERR);
     if((l.y0 > h || l.y > h) || l.y0 > l.y) IMG_CPPERRORCALL(OUT_BOUND_ERR);
 
@@ -243,7 +333,13 @@ int Canvas::line(struct line l){
     return NO_ERR;
 }
 
-int Canvas::circunference(struct circ c){
+    /**
+     * @brief Creates a circle based upon a circ object
+     * @param circ See typedef struct circ for more info
+     * @returns 0 if successful
+     * 
+    */
+int Canvas::circunference(struct circ &c){
     if(c.x0 - c.radius > w || c.x0 + c.radius < 0) IMG_CPPERRORCALL(OUT_BOUND_ERR);
     if(c.y0 - c.radius > h || c.y0 + c.radius < 0) IMG_CPPERRORCALL(OUT_BOUND_ERR);
 
