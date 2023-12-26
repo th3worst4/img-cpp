@@ -174,7 +174,6 @@ struct Canvas{
     size_t size;
     uint8_t *data = NULL;
 
-    Canvas();
     Canvas(size_t w, size_t h);
     Canvas(const char* name);
 
@@ -187,9 +186,13 @@ struct Canvas{
     
 };
 
-Canvas::Canvas(){
-}
-
+    /**
+     * @brief Default canvas constructor. Initializes an empty canvas
+     * 
+     * @param w canvas width
+     * @param h canvas height
+     * 
+     */
 Canvas::Canvas(size_t w, size_t h): w(w), h(h){
     /*
         Initialize a canvas object.
@@ -200,6 +203,12 @@ Canvas::Canvas(size_t w, size_t h): w(w), h(h){
     std::fill(data, data+size, 0xAAAAAA);
 }
 
+    /**
+     * @brief Reads a .ppm file and store the information on a new canvas object
+     * 
+     * @param name or relative path of the file
+     * 
+     */
 Canvas::Canvas(const char* name){
     std::fstream canvas(name, std::ios::in ^ std::ios::out);
 
@@ -277,14 +286,18 @@ int Canvas::copy(Canvas &out){
     return NO_ERR;
 }
 
-
+    /**
+     * @brief Change one and only pixel of the canvas. It's the basic idea for
+     * all other drawing functions, still you can call it alone.
+     * 
+     * @param x position of the pixel 
+     * @param y position of the pixel
+     * @param hex_color uint32_t new hexadecimal color
+     * 
+     * @return 0 if successfull
+     * 
+     */
 int Canvas::change_pixel(size_t x, size_t y, uint32_t hex_color){
-    /*
-        This function is supposed to change just one pixel of the canvas.
-        It's the basic idea for all other drawing functions, 
-        still you can call it alone
-        Returns 0 if successful
-    */
     --x; --y;
     std::array<uint8_t, 3> rgb;
     rgb = hex_to_rgb(hex_color);
@@ -298,8 +311,11 @@ int Canvas::change_pixel(size_t x, size_t y, uint32_t hex_color){
 
     /**
      *  @brief Creates a line based upon a line object
+     * 
      *  @param line see typedef struct line for more info
      *  @returns 0 if successful
+     * 
+     *  @warning Line stroke needs improvements
      * 
      */
 int Canvas::line(struct line &l){
@@ -336,7 +352,10 @@ int Canvas::line(struct line &l){
     /**
      * @brief Creates a circle based upon a circ object
      * @param circ See typedef struct circ for more info
+     * 
      * @returns 0 if successful
+     * 
+     * @warning Circunference stroke needs improvements
      * 
     */
 int Canvas::circunference(struct circ &c){
