@@ -77,9 +77,9 @@ enum HEX_COLOR{
 std::array<uint8_t, 3> hex_to_rgb(uint32_t hex){
     std::array<uint8_t, 3> rgb;
 
-    rgb[0] = (hex & 0xff000) >> 4*sizeof(uint32_t);
-    rgb[1] = (hex & 0x00ff00) >> 2*sizeof(uint32_t);
-    rgb[2] = hex & 0x0000ff;
+    rgb[0] = (hex & 0xFF0000) >> 4*sizeof(uint32_t);
+    rgb[1] = (hex & 0x00FF00) >> 2*sizeof(uint32_t);
+    rgb[2] = hex & 0x0000FF;
 
     for(uint8_t value : rgb){
         if(value > 255) IMG_CPPERRORCALL(CONV_ERR);
@@ -169,7 +169,7 @@ int circ::stroke(bool s, size_t sw, uint32_t sc){
      * @note Has default constructor which requires only the width and size
      * 
      */
-struct Canvas{
+typedef struct Canvas{
     size_t w, h;
     size_t size;
     uint8_t *data = NULL;
@@ -184,7 +184,7 @@ struct Canvas{
     int line(struct line &l);
     int circunference(struct circ &c);
     
-};
+}Canvas;
 
     /**
      * @brief Default canvas constructor. Initializes an empty canvas
@@ -298,7 +298,6 @@ int Canvas::copy(Canvas &out){
      * 
      */
 int Canvas::change_pixel(size_t x, size_t y, uint32_t hex_color){
-    --x; --y;
     std::array<uint8_t, 3> rgb;
     rgb = hex_to_rgb(hex_color);
 
@@ -319,33 +318,17 @@ int Canvas::change_pixel(size_t x, size_t y, uint32_t hex_color){
      * 
      */
 int Canvas::line(struct line &l){
-    if((l.x0 > w || l.x > w) || l.x0 > l.x) IMG_CPPERRORCALL(OUT_BOUND_ERR);
-    if((l.y0 > h || l.y > h) || l.y0 > l.y) IMG_CPPERRORCALL(OUT_BOUND_ERR);
+    if(l.x0 > w || l.x > w || l.x0 > l.x) IMG_CPPERRORCALL(OUT_BOUND_ERR);
+    if(l.y0 > h || l.y > h) IMG_CPPERRORCALL(OUT_BOUND_ERR);
 
-    if(l.x0 - l.x){
-        float m = (l.y0-l.y)/(l.x0-l.x);
-        size_t dx = abs(l.x0-l.x);
-        for(int i = 0; i <= dx; i++){
-            size_t sx = l.x0 + i;
-            size_t sy = l.y0 + m*i;
+    if(l.x != l.x0){
+        float m = ((long)l.y0 - (long)l.y)/((long)l.x0 - (long)l.x);
 
-            change_pixel(sx, sy, l.hex_color);
-            for(int j = 0; j < l.line_width; j++){
-                change_pixel(sx, sy+j, l.hex_color);
-                change_pixel(sx, sy-j, l.hex_color);
-            }
-        }
-    }else{
-        size_t dy = abs(l.y0 - l.y);
-        for(int i = 0; i < dy; i++){
-            change_pixel(l.x, l.y0 + i, l.hex_color);
-            for(int j = 0; j < l.line_width; j++){
-                change_pixel(l.x+j, l.y0 + i, l.hex_color);
-                change_pixel(l.x-j, l.y0 + i, l.hex_color);
-            } 
+        for(int i = 0; i <= abs(l.x - l.x0); i++){
+            change_pixel(l.x0 + i, l.y0 + m*i, l.hex_color);
         }
     }
- 
+
     return NO_ERR;
 }
 

@@ -5,11 +5,15 @@
 
 int main(){
 
-    Canvas test("savetest.ppm");
-    Canvas readtest = Canvas(100, 100);
+    Canvas test(100, 100);
 
-    test.copy(readtest);
-    readtest.saveppm("readtest.ppm");
+    line l1(0, 0, 99, 99, 0, RED);
+    line l2(0, 99, 99, 0, 0, RED);
+
+    test.line(l1);
+    test.line(l2);
+
+    test.saveppm("linetest.ppm");
 
     return 0;
 }
