@@ -101,7 +101,7 @@ std::array<uint8_t, 3> hex_to_rgb(uint32_t hex){
      * 
      */
 typedef struct line{
-    size_t x0, y0, x, y;
+    long x0, y0, x, y;
     size_t line_width;
     uint32_t hex_color;
 
@@ -322,7 +322,7 @@ int Canvas::line(struct line &l){
     if(l.y0 > h || l.y > h) IMG_CPPERRORCALL(OUT_BOUND_ERR);
 
     if(l.x != l.x0){
-        float m = ((long)l.y0 - (long)l.y)/((long)l.x0 - (long)l.x);
+        float m = (l.y0 - l.y)/(l.x0 - l.x);
 
         for(int i = 0; i <= abs(l.x - l.x0); i++){
             change_pixel(l.x0 + i, l.y0 + m*i, l.hex_color);
