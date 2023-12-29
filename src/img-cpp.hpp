@@ -327,6 +327,10 @@ int Canvas::line(struct line &l){
         for(int i = 0; i <= abs(l.x - l.x0); i++){
             change_pixel(l.x0 + i, l.y0 + m*i, l.hex_color);
         }
+    }else{
+        for(int i = 0; i <= abs(l.y - l.y0); i++){
+            change_pixel(l.x0, l.y0 + i, l.hex_color);
+        }
     }
 
     return NO_ERR;
