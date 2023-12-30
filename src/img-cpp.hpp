@@ -113,7 +113,7 @@ typedef struct line{
 
 line::line(int64_t x0, int64_t y0, int64_t x, int64_t y, int64_t lw, uint32_t hexc): x0(x0), y0(y0), x(x), y(y), line_width(lw), hex_color(hexc){
     lenght = sqrt(pow(x - x0, 2) + pow(y - y0, 2));
-    if(x0 - x) m = (y0 - y)/(x0 - x);
+    if(x0 - x) m = (float)(y0 - y)/(float)(x0 - x);
 }
 
     /**
