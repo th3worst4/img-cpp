@@ -101,14 +101,19 @@ std::array<uint8_t, 3> hex_to_rgb(uint32_t hex){
      * 
      */
 typedef struct line{
-    long x0, y0, x, y;
+    int64_t x0, y0, x, y;
     size_t line_width;
     uint32_t hex_color;
 
-    line(size_t x0, size_t y0, size_t x, size_t y, size_t line_width, uint32_t hex_color);
+    float m;
+    size_t lenght;
+
+    line(int64_t x0, int64_t y0, int64_t x, int64_t y, int64_t line_width, uint32_t hex_color);
 }line;
 
-line::line(size_t x0, size_t y0, size_t x, size_t y, size_t lw, uint32_t hexc): x0(x0), y0(y0), x(x), y(y), line_width(lw), hex_color(hexc){
+line::line(int64_t x0, int64_t y0, int64_t x, int64_t y, int64_t lw, uint32_t hexc): x0(x0), y0(y0), x(x), y(y), line_width(lw), hex_color(hexc){
+    lenght = sqrt(pow(x - x0, 2) + pow(y - y0, 2));
+    if(x0 - x) m = (y0 - y)/(x0 - x);
 }
 
     /**
@@ -322,10 +327,8 @@ int Canvas::line(struct line &l){
     if(l.y0 > h || l.y > h) IMG_CPPERRORCALL(OUT_BOUND_ERR);
 
     if(l.x != l.x0){
-        float m = (l.y0 - l.y)/(l.x0 - l.x);
-
         for(int i = 0; i <= abs(l.x - l.x0); i++){
-            change_pixel(l.x0 + i, l.y0 + m*i, l.hex_color);
+            change_pixel(l.x0 + i, l.y0 + l.m*i, l.hex_color);
         }
     }else{
         for(int i = 0; i <= abs(l.y - l.y0); i++){
@@ -346,12 +349,13 @@ int Canvas::line(struct line &l){
      * 
     */
 int Canvas::circunference(struct circ &c){
-    if(c.x0 - c.radius > w || c.x0 + c.radius < 0) IMG_CPPERRORCALL(OUT_BOUND_ERR);
-    if(c.y0 - c.radius > h || c.y0 + c.radius < 0) IMG_CPPERRORCALL(OUT_BOUND_ERR);
+    //if(c.x0 - c.radius > w || c.x0 + c.radius < 0) IMG_CPPERRORCALL(OUT_BOUND_ERR);
+    //if(c.y0 - c.radius > h || c.y0 + c.radius < 0) IMG_CPPERRORCALL(OUT_BOUND_ERR);
 
     if(c.fill_state){
         for(int x = c.x0 - c.radius; x < c.x0 + c.radius; x++){
             for(int y = c.y0 - c.radius; y < c.y0 + c.radius; y++){
+                if(x < 0 || y < 0 || x > w || y > h) continue;
                 if(pow(x-c.x0, 2) + pow(y-c.y0, 2) <= pow(c.radius, 2)) change_pixel(x, y, c.fill_color);
             }
         }
