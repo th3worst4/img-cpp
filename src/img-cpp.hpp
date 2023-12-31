@@ -105,7 +105,7 @@ typedef struct line{
     size_t line_width;
     uint32_t hex_color;
 
-    float m;
+    float m, a, b, c;
     size_t lenght;
 
     line(int64_t x0, int64_t y0, int64_t x, int64_t y, int64_t line_width, uint32_t hex_color);
@@ -113,7 +113,14 @@ typedef struct line{
 
 line::line(int64_t x0, int64_t y0, int64_t x, int64_t y, int64_t lw, uint32_t hexc): x0(x0), y0(y0), x(x), y(y), line_width(lw), hex_color(hexc){
     lenght = sqrt(pow(x - x0, 2) + pow(y - y0, 2));
-    if(x0 - x) m = (float)(y0 - y)/(float)(x0 - x);
+    if(x0 - x){
+        m = (float)(y0 - y)/(float)(x0 - x);
+        if(lw > 1){
+            c = -y0 + m*x0;
+            b = 1;
+            a = -m;
+        }
+    }
 }
 
     /**
@@ -326,15 +333,21 @@ int Canvas::line(struct line &l){
     if(l.x0 > w || l.x > w || l.x0 > l.x) IMG_CPPERRORCALL(OUT_BOUND_ERR);
     if(l.y0 > h || l.y > h) IMG_CPPERRORCALL(OUT_BOUND_ERR);
 
-    if(l.x != l.x0){
-        for(int i = 0; i <= abs(l.x - l.x0); i++){
-            change_pixel(l.x0 + i, l.y0 + l.m*i, l.hex_color);
-        }
-    }else{
-        for(int i = 0; i <= abs(l.y - l.y0); i++){
-            change_pixel(l.x0, l.y0 + i, l.hex_color);
+    float x, y;
+    float s = 0;
+    while(s < 1){
+        x = l.x0 + s*(l.x - l.x0);
+        y = l.y0 + s*(l.y - l.y0);
+        change_pixel(x, y, l.hex_color);
+        s += .001;
+        if(l.line_width > 1){
+            for(int lw = 1; lw <= l.line_width; lw++){
+                change_pixel(x + lw, y + lw, l.hex_color);
+                change_pixel(x - lw, y - lw, l.hex_color);
+            }
         }
     }
+    change_pixel(l.x, l.y, l.hex_color);
 
     return NO_ERR;
 }
