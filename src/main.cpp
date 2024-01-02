@@ -7,10 +7,10 @@ int main(){
 
     Canvas test(100, 100);
 
-    line l1(0, 0, 99, 99, 1, RED);
+    line l1(10, 10, 77, 77, 1, RED);
     line l2(10, 77, 88, 44, 1, BLUE);
     line l3(0, 50, 99, 60, 1, GREEN);
-    line l4(0, 50, 99, 51, 3, BLACK);
+    line l4(0, 50, 99, 51, 1, BLACK);
     line l5(50, 0, 50, 99, 1, WHITE);
 
     /*

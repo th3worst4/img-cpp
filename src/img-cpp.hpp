@@ -115,11 +115,6 @@ line::line(int64_t x0, int64_t y0, int64_t x, int64_t y, int64_t lw, uint32_t he
     lenght = sqrt(pow(x - x0, 2) + pow(y - y0, 2));
     if(x0 - x){
         m = (float)(y0 - y)/(float)(x0 - x);
-        if(lw > 1){
-            c = -y0 + m*x0;
-            b = 1;
-            a = -m;
-        }
     }
 }
 
@@ -333,19 +328,13 @@ int Canvas::line(struct line &l){
     if(l.x0 > w || l.x > w || l.x0 > l.x) IMG_CPPERRORCALL(OUT_BOUND_ERR);
     if(l.y0 > h || l.y > h) IMG_CPPERRORCALL(OUT_BOUND_ERR);
 
-    float x, y;
     float s = 0;
     while(s < 1){
+        int64_t x, y;
         x = l.x0 + s*(l.x - l.x0);
         y = l.y0 + s*(l.y - l.y0);
         change_pixel(x, y, l.hex_color);
         s += .001;
-        if(l.line_width > 1){
-            for(int lw = 1; lw <= l.line_width; lw++){
-                change_pixel(x + lw, y + lw, l.hex_color);
-                change_pixel(x - lw, y - lw, l.hex_color);
-            }
-        }
     }
     change_pixel(l.x, l.y, l.hex_color);
 
